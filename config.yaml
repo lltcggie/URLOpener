@@ -1,0 +1,6 @@
+"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe":
+  - "dr:.*youtube.com"
+  - "d:docs.google.com"
+  - "https://github.com/"
+"C:\\Program Files\\Mozilla Firefox\\firefox.exe":
+  - "r:.*"
