@@ -9,7 +9,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <optional>
 #include <ryml/ryml.hpp>
 #include <ryml/ryml_std.hpp>
 
@@ -26,6 +25,7 @@ struct stSearchInfo
 	eSearchType type;
 	std::string text;
 	std::regex reg;
+	std::wstring option;
 };
 
 // マッチしたルールの長さ
@@ -146,28 +146,41 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 			std::vector<stSearchInfo> infoList;
 			infoList.reserve(exeChild.num_children());
 			for (const auto& regexChild : exeChild.children()) {
-				auto val = regexChild.val();
-				std::string str(val.data(), val.size());
+				std::string rule;
+				std::wstring option;
+				if (regexChild.has_children()) {
+					assert(regexChild.num_children() == 2);
+
+					auto val = regexChild.child(0).val();
+					rule.assign(val.data(), val.size());
+
+					option = to_wstring(regexChild.child(1).val());
+				}
+				else {
+					auto val = regexChild.val();
+					rule.assign(val.data(), val.size());
+				}
 
 				stSearchInfo info;
-				if (str.starts_with("r:")) {
+				if (rule.starts_with("r:")) {
 					info.type = eSearchType_URLRegex;
-					info.text.assign(str.c_str() + 2);
+					info.text.assign(rule.c_str() + 2);
 					info.reg.assign(info.text.c_str());
 				}
-				else if (str.starts_with("d:")) {
+				else if (rule.starts_with("d:")) {
 					info.type = eSearchType_Domain;
-					info.text.assign(str.c_str() + 2);
+					info.text.assign(rule.c_str() + 2);
 				}
-				else if (str.starts_with("dr:")) {
+				else if (rule.starts_with("dr:")) {
 					info.type = eSearchType_DomainRegex;
-					info.text.assign(str.c_str() + 3);
+					info.text.assign(rule.c_str() + 3);
 					info.reg.assign(info.text.c_str());
 				}
 				else {
 					info.type = eSearchType_URL;
-					info.text.assign(str);
+					info.text.assign(rule);
 				}
+				info.option = option;
 
 				infoList.emplace_back(info);
 			}
@@ -176,23 +189,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 
 	// マッチした中でルールが最長の物を優先して選択する
-	std::pair<size_t, std::wstring> best;
-	best.first = 0;
+	std::tuple<size_t, std::wstring, std::wstring> best;
+	std::get<0>(best) = 0;
 	for (const auto& p : browserList) {
 		const auto& exe = p.first;
 		const auto& infoList = p.second;
 		for (const auto& info : infoList) {
 			const auto len = isMatch(url, info);
-			if (len > best.first) {
-				best.first = len;
-				best.second = exe;
+			if (len > std::get<0>(best)) {
+				std::get<0>(best) = len;
+				std::get<1>(best) = exe;
+				std::get<2>(best) = info.option;
 			}
 		}
 	}
 
-	if (best.first > 0)
-	{
-		launchURLBrowser(best.second, wUrl);
+	if (std::get<0>(best) > 0) {
+		std::wstring wUrlWithOpt = wUrl;
+		if (wUrlWithOpt.find(L'?') == std::wstring::npos) {
+			wUrlWithOpt = wUrlWithOpt + L"?" + std::get<2>(best);
+		}
+		else {
+			wUrlWithOpt = wUrlWithOpt + L"&" + std::get<2>(best);
+		}
+		launchURLBrowser(std::get<1>(best), wUrlWithOpt.c_str());
 		return 0;
 	}
 

@@ -15,6 +15,7 @@ https://kimama9.blog.fc2.com/blog-entry-996.html
 ```
 "ブラウザのパス":
   - "URLマッチルール"
+  - ["URLマッチルール", "URL追加パラメータ"]
 ```
 
 例
@@ -32,3 +33,9 @@ https://kimama9.blog.fc2.com/blog-entry-996.html
 - `dr:` URLのドメインが正規表現に該当するかどうか
 - `r:` URLが正規表現に該当するかどうか
 - プレフィックスなし URLが前方一致するか
+
+### URL追加パラメータ
+`["https://www.google.com/search, "q=a"]` というルールではURLが与えられると以下のようにURLにパラメータが追加された上でブラウザに渡される。
+
+- `https://www.google.com/search` -> `https://www.google.com/search?q=a`
+- `https://www.google.com/search?ie=UTF-8` -> `https://www.google.com/search?ie=UTF-8&q=a`
