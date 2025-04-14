@@ -1,0 +1,10 @@
+{
+  "name": "url-opener",
+  "version": "1.0.0",
+  "description": "URLOpener",
+  "homepage": "https://github.com/lltcggie/URLOpener",
+  "license": "MIT",
+  "dependencies": [
+    "ryml"
+  ]
+}
