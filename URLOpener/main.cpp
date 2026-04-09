@@ -207,7 +207,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	if (std::get<0>(best) > 0) {
 		std::wstring wUrlWithOpt = wUrl;
 		if (wUrlWithOpt.find(L'?') == std::wstring::npos) {
-			wUrlWithOpt = wUrlWithOpt + L"?" + std::get<2>(best);
+			const auto& opt = std::get<2>(best);
+			if (opt.length() > 0) {
+				wUrlWithOpt = wUrlWithOpt + L"?" + std::get<2>(best);
+			}
 		}
 		else {
 			wUrlWithOpt = wUrlWithOpt + L"&" + std::get<2>(best);
